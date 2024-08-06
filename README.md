@@ -1,4 +1,4 @@
-Read/Write/Copy ADF files to Amiga Floppies
+Write/Read/Copy ADF files to Amiga Floppies
 ===========================================
 
 Note: The are Amiga programs designed to run on Amiga computers.
