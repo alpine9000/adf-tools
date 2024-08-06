@@ -13,75 +13,66 @@ disk_copy(int srcUnit, int destUnit, struct IOExtTD *diskreq0, struct IOExtTD *d
 {
   int success = FALSE;  
   uint8_t *buffer = 0;
-  uint8_t *verify = 0;  
   int16_t track;
   int16_t readFail = FALSE;
   int16_t writeFail = FALSE;  
   int16_t numTracks;
   
   if ((buffer = AllocMem(TRACK_SIZE, MEMF_CHIP|MEMF_PUBLIC)))  {
-    if ((verify = AllocMem(TRACK_SIZE, MEMF_CHIP|MEMF_PUBLIC)))  {    
-      track_motorOn(diskreq0);
-      track_motorOn(diskreq1);      
-      numTracks = track_findNumTracks(diskreq0);
-      if (track_findNumTracks(diskreq1) != numTracks) {
-	printf("%s: incompatible src and dest disks\n", g_program);
-	return success;
-      }
-      success = TRUE;    	  
-      for (track=0; (track < numTracks) && success; track++) {
-	success = track_read(diskreq0, buffer, track);
-	if (success) {
-	  success = track_write(diskreq1, buffer, track);
-	  if (!success) {
-	    writeFail = TRUE;
-	  }
-	} else {
-	  readFail = TRUE;
-	}
-
-#ifdef SQUIRTD_OUTPUT
-	printf("\n");
-#else
-	printf("\r");
-#endif
-	printf("DF%d:%02d %c %c%c DF%d:%02d %c",
-	       srcUnit, (track+2)>>1, track & 1 ? '\\' : '/',
-	       success ? '=' : '!', '>',
-	       destUnit, (track+2)>>1, track & 1 ? '\\' : '/');
-
-	
-	if (readFail) {
-	  printf(" *** failed to read track ***\n\n");
-	}
-
-
-	if (writeFail) {
-	  printf(" *** failed to read track ***\n\n");
-	}
-	
-	fflush(stdout);	
-      }
-            
+    track_motorOn(diskreq0);
+    track_motorOn(diskreq1);      
+    numTracks = track_findNumTracks(diskreq0);
+    if (track_findNumTracks(diskreq1) != numTracks) {
+      printf("%s: incompatible src and dest disks\n", g_program);
+      return success;
+    }
+    success = TRUE;    	  
+    for (track=0; (track < numTracks) && success; track++) {
+      success = track_read(diskreq0, buffer, track);
       if (success) {
-	printf("\n\ncopied %d tracks (%d bytes)\n\n", numTracks>>1, TRACK_SIZE*numTracks);
+	success = track_write(diskreq1, buffer, track);
+	if (!success) {
+	  writeFail = TRUE;
+	}
+      } else {
+	readFail = TRUE;
       }
       
-      track_motorOff(diskreq0);
-      track_motorOff(diskreq1);      
-    } else {
-      printf("%s: failed to allocate %d bytes of chip ram\n", g_program, TRACK_SIZE);
+#ifdef SQUIRTD_OUTPUT
+      printf("\n");
+#else
+      printf("\r");
+#endif
+      printf("DF%d:%02d %c %c%c DF%d:%02d %c",
+	     srcUnit, (track+2)>>1, track & 1 ? '\\' : '/',
+	     success ? '=' : '!', '>',
+	     destUnit, (track+2)>>1, track & 1 ? '\\' : '/');
+      
+      
+      if (readFail) {
+	printf(" *** failed to read track ***\n\n");
+      }
+      
+      
+      if (writeFail) {
+	printf(" *** failed to read track ***\n\n");
+      }
+      
+      fflush(stdout);	
     }
+    
+    if (success) {
+      printf("\n\ncopied %d tracks (%d bytes)\n\n", numTracks>>1, TRACK_SIZE*numTracks);
+    }
+    
+    track_motorOff(diskreq0);
+    track_motorOff(diskreq1);      
   } else {
     printf("%s: failed to allocate %d bytes of chip ram\n", g_program, TRACK_SIZE);
   }
 
   if (buffer) {
     FreeMem(buffer, TRACK_SIZE);
-  }
-
-  if (verify) {
-    FreeMem(verify, TRACK_SIZE);
   }
   
   return success;
