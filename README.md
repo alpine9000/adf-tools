@@ -3,7 +3,7 @@ Write/Read/Copy ADF files to Amiga Floppies
 
 /* Code heavily inspired by Track_Copy.c from Amiga Devices Manual */
 
-Note: The are Amiga programs designed to run on Amiga computers.
+Note: These are Amiga programs designed to run on Amiga computers.
 
 adw
 ---
